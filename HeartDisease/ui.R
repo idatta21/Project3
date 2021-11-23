@@ -7,8 +7,9 @@ library(caret)
 library(tidyverse)
 library(plotly)
 
-heartDiseaseData <- read_csv("heart_cleveland.csv", col_names = TRUE)
+data <- read_csv("heart_cleveland.csv", col_names = TRUE)
 
+heartDiseaseData<-data
 #Factoring the features
 #condition
 heartDiseaseData$condition<-as.factor(heartDiseaseData$condition)
@@ -96,11 +97,13 @@ shinyUI(navbarPage(
       sidebarPanel(
         selectInput("predictor", h5(strong("Choose Predictor")), c( "condition","cp","sex","exang")),
         selectInput("plotType",h5(strong("Type of Diagram")),c("Barchart","Histogram","Boxplot")),
-        selectInput("summary",h5(strong("Type of Summary")),c("FivePoint Summary","Mean","IQR"))
+        selectInput("summary",h5(strong("Type of Summary Report")),c("Frequency","Proportions"))
+        
       ),
       mainPanel(
         
-          plotOutput("plot1")
+          plotOutput("plot1"),
+          dataTableOutput("dTable")
         ) # close of main panel
       ), #closes the data exploration tab
     tabPanel(

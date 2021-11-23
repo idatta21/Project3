@@ -8,7 +8,9 @@ library(tidyverse)
 library(plotly)
 
 
-heartDiseaseData <- read_csv("heart_cleveland.csv", col_names = TRUE)
+data <- read_csv("heart_cleveland.csv", col_names = TRUE)
+
+heartDiseaseData<-data
 #Factoring the features
 #condition
 heartDiseaseData$condition<-as.factor(heartDiseaseData$condition)
@@ -73,4 +75,21 @@ shinyServer(function(input, output, session) {
       geom_boxplot() + theme(legend.title = element_blank())+labs(x="")
    }
   })#end of plot
+  
+  output$dTable<-renderDataTable({
+    xvalue<-input$predictor
+    if (input$summary == "Frequency"){
+    tab<-table(pull(heartDiseaseData,xvalue))
+    t<-data.frame(tab)
+    names(t)[2]<-paste0("Frequency ")
+    return(t)
+    }
+    else if (input$summary == "Proportions"){
+      tab<-table(pull(heartDiseaseData,xvalue))
+      t<-data.frame(prop.table(tab))
+      t[2]<-round(t[2],4)
+      names(t)[2]<-paste0("Proportion ")
+      return(t)
+    }
+  })
   })#end of shiny and function session
