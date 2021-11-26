@@ -76,19 +76,26 @@ shinyUI(navbarPage(
         selectInput("predictor", h5(strong("Choose Predictor")), c( "condition","cp","sex","exang")),
         selectInput("plotType",h5(strong("Type of Diagram")),c("Barchart","Histogram","Boxplot")),
         selectInput("summary",h5(strong("Type of Summary Report")),c("Frequency","Proportions"))
-        
       ),
       mainPanel(
         
           plotOutput("plot1"),
-          dataTableOutput("dTable")
+          dataTableOutput("dTable"),
+          textOutput("info"),
+          verbatimTextOutput("allsummary")
         ) # close of main panel
       ), #closes the data exploration tab
     
     tabPanel(
       title="Data",icon = icon("database"),
         sidebarPanel(
-        
+          
+          checkboxGroupInput("checkboxGroup", label = h4("Let the user select the variables to subset data: "), 
+                             choices = colnames(select_all(heartDiseaseData)) , inline = F,
+                             selected = colnames(select_all(heartDiseaseData))),
+          radioButtons("rb",h5(strong("Select the Sex")),c("Female","Male")),
+          radioButtons("rb2",h5(strong("Select the Condition")),c("No Heart Disease","Heart Disease")),
+          
         downloadButton("downloadData", "Download",icon = shiny::icon("download"))
       ),
       mainPanel(
@@ -109,7 +116,7 @@ navbarMenu(
       h4("Logistic Regression"),
       "Logistic regression is the appropriate regression analysis to conduct",
       "when the dependent variable is dichotomous (binary). ...",
-      "Logistic regression is used to describe data and to explain the ",
+      "It is used to describe data and to explain the ",
       "relationship between one dependent binary variable and one or more nominal,",
       "ordinal, interval or ratio-level independent variables.",
       uiOutput("logReg"),
@@ -198,13 +205,13 @@ navbarMenu(
         step = 1
       ),
       # Allow the user to select the proportion of data to use for
-      # a testing set.
+      # a traing set.
       numericInput(
-        inputId = "propTesting",
-        label = "Proportion of Data to use for Test Set",
-        value = 0.2,
-        min = 0.1,
-        max = 0.5,
+        inputId = "propTraining",
+        label = "Proportion of Data to use for Train Set",
+        value = 0.8,
+        min = 0.3,
+        max = 0.8,
         step = 0.05
       ),
       
@@ -249,8 +256,6 @@ navbarMenu(
         style="display:inline-block"
       ),
       
-      
-      
       # Let the user select the number of variables to consider
       # at each split.
       selectizeInput(
@@ -271,24 +276,19 @@ navbarMenu(
     # summaries.
     mainPanel(
       # Show the test-set accuracy.
-      h3("Test Set Accuracies to 3 decimal places"),
+      h3("Train Set Accuracies upto 3 decimal places"),
       dataTableOutput("accTableOutput"),
       br(),
       # Show the coefficients of the Logistic Regression Model.
-      h3("Summary of Linear Regression Model"),
+      h3("Summary of Logistic Regression Model"),
       dataTableOutput("logRegSummary"),
-      tableOutput('logRegconfusionMatrix'),
-      verbatimTextOutput("logRegclassError"),
       br(),
       # Show the final tree diagram.
       h3("Classification Tree Diagram"),
       plotOutput("treeSummary"),
-      tableOutput('treeconfusionMatrix'),
-      verbatimTextOutput("treeclassError"),
       br(),
       h3("Random Forest Feature Importances"),
       plotOutput("rfVarImpPlot"),
-      verbatimTextOutput("rfVarclassError")
     )
   ),
   

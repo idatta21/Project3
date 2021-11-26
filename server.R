@@ -20,6 +20,45 @@ source("source.R")
 
 shinyServer(function(input, output, session) {
   
+    output$HDdata <- renderDataTable({
+    
+    ###
+    # Create a data table output that the user can filter.
+    ###
+    
+    # Extract the selected sex, condition columns.
+    selectedSex <- input$rb
+    selectedcondition <- input$rb2
+    selectedCols <- input$checkboxGroup
+    
+    # Filter the data based on user input.
+    heartDiseaseData%>%
+       filter(sex %in% selectedSex,
+             condition %in% selectedcondition)%>%
+      select(selectedCols)
+    
+  })
+    
+    output$downloadData <- downloadHandler(
+      
+      filename = function() {
+        paste("Heartdata.csv")
+      },
+      content = function(file) {
+        selectedSex <- input$rb
+        selectedcondition <- input$rb2
+        selectedCols <- input$checkboxGroup
+        write.csv(
+          heartDiseaseData %>%
+            filter(sex %in% selectedSex,
+                   condition %in% selectedcondition)%>%
+            select(input$selectedCols), 
+          file, 
+          row.names = FALSE
+        )
+      }
+    )
+
   
   # plots for data exploration tab
   output$plot1<- renderPlot({
@@ -55,10 +94,18 @@ shinyServer(function(input, output, session) {
       tab<-table(pull(heartDiseaseData,xvalue))
       t<-data.frame(prop.table(tab))
       t[2]<-round(t[2],4)
+      names(t)[1]<-paste0("Variable name:",xvalue)
       names(t)[2]<-paste0("Proportion ")
       return(t)
     }
-  })
+  })# end of dTtable
+  
+  output$info<-renderText(
+    text<-paste0("Overall Summary"," of HeartDisease Data")
+  )
+  output$allsummary<-renderPrint(
+    summary(heartDiseaseData)
+  )
   
   #math expression for model info tab
   output$logReg <- renderUI({
@@ -113,7 +160,7 @@ shinyServer(function(input, output, session) {
   observeEvent(input$trainStart, {
     
     ###
-    # Test the performance of the three models.
+    # train the performance of the three models.
     ###
     
     # Create a Progress object
@@ -126,9 +173,9 @@ shinyServer(function(input, output, session) {
     # Get the variables to use for each model.
      Vars <- unlist(input$checkGroup)
     
-    # Get the random seed, proportion of testing, and k-folds params.
+    # Get the random seed, proportion of training, and k-folds params.
     randSeed <- input$randSeed
-    propTesting <- input$propTesting
+    propTraining <- input$propTraining
     numFolds <- input$numFolds
     
     # Get the Cps to try.
@@ -142,17 +189,15 @@ shinyServer(function(input, output, session) {
     
     # Set the random seed.
     set.seed(randSeed)
-    
-    
     # Get the testing indexes.
-    testInd <- sample(
+    trainInd <- sample(
       seq_len(nrow(datamodel)), 
-      size=floor(nrow(datamodel)*propTesting)
+      size=floor(nrow(datamodel)*propTraining)
     )
     
     # Split into training and testing sets.
-    train <- datamodel[-testInd, ]
-    test <- datamodel[testInd, ]
+    train <- datamodel[trainInd, ]
+    test <- datamodel[-trainInd, ]
    
     
     # Suppress any warning in the fitting process.
@@ -204,12 +249,12 @@ shinyServer(function(input, output, session) {
     )
     
     # Increment the progress bar, and update the detail text.
-    progress$inc(0.8, detail = "Evaluating Test Set Performance")
+    progress$inc(0.8, detail = "Evaluating train Set Performance")
 
     # Get test set predictions.
-    logRegPreds <- predict(logRegModel, test, type="raw")
-    treePreds <- predict(treeModel, test, type="raw")
-    randForPreds <- predict(rfModel, test, type="raw")
+    logRegPreds <- predict(logRegModel, train, type="raw")
+    treePreds <- predict(treeModel, train, type="raw")
+    randForPreds <- predict(rfModel, train, type="raw")
 
     # Create the findMode function.
     findMode <- function(x) {
@@ -218,13 +263,13 @@ shinyServer(function(input, output, session) {
     }
     # 
     # Find the no-info rate.
-     noInfoRate <- mean(findMode(test$condition) == test$condition)
-    # Find the test set performances.
+     noInfoRate <- mean(findMode(train$condition) == train$condition)
+    # Find the train set performances.
     accVec <- c(
       noInfoRate,
-      mean(logRegPreds == test$condition, na.rm=TRUE),
-      mean(treePreds == test$condition, na.rm=TRUE),
-      mean(randForPreds == test$condition, na.rm=TRUE)
+      mean(logRegPreds == train$condition, na.rm=TRUE),
+      mean(treePreds == train$condition, na.rm=TRUE),
+      mean(randForPreds == train$condition, na.rm=TRUE)
     )
 
     # Convert to a matrix and percentages.
@@ -254,7 +299,7 @@ shinyServer(function(input, output, session) {
   output$logRegSummary <- renderDataTable({
     round(as.data.frame(summary(logRegModel)$coef), 3)
   })
-  
+ 
   # Create a nice tree diagram.
   output$treeSummary <- renderPlot({
     fancyRpartPlot(treeModel$finalModel)
@@ -415,8 +460,8 @@ shinyServer(function(input, output, session) {
     output$preds <- renderDataTable({
       preds
     })
+})
 
-  })
 
   # Return the output.
   return(output)
