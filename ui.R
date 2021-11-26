@@ -18,16 +18,27 @@ library(rattle)
 #include data 
 source("source.R")
 
+# Get the location and name of the image for the About tab.
+imageName <- c("heart.png")
 
 shinyUI(navbarPage(
   
   title = "Project3 HeartDiseases Data of Clevland",
+  # Add a theme.
+  theme = shinytheme("flatly"),
+  # create tab for 3 different subtab pages
     tabsetPanel(
      tabPanel(
-      title="About",
+      title="About",icon = icon("question"),
       mainPanel(
+        # include image related to data
+        img(
+          src = imageName, 
+          height = '260px', 
+          width = '360px'
+        ),
         h3("App Description"),
-        "This app is about heart Disease data from Clevland",
+        "This app is about heart Disease data from Cleveland",
         "It demonstrates an exploratory data analysis of the popular
          Heart Disease  database.Heart disease prediction is carried out
          using 3 different models such as linear regression,classification Trees
@@ -42,7 +53,7 @@ shinyUI(navbarPage(
         tags$ul(
           tags$li(
             "Data Tab:  Scroll through the data set",
-            " Subset this data set (rows and columns)",
+            " Subset this data set (by rows and columns)",
             " Download the data "
           ),
           tags$li(
@@ -57,12 +68,10 @@ shinyUI(navbarPage(
           )
         )
         
-
-#need to include image too
 )#close main panel
 ),#close app description tab
     tabPanel(
-      title = "Data Exploration",
+      title = "Data Exploration",icon = icon("cogs"),
       sidebarPanel(
         selectInput("predictor", h5(strong("Choose Predictor")), c( "condition","cp","sex","exang")),
         selectInput("plotType",h5(strong("Type of Diagram")),c("Barchart","Histogram","Boxplot")),
@@ -77,7 +86,7 @@ shinyUI(navbarPage(
       ), #closes the data exploration tab
     
     tabPanel(
-      title="Data",
+      title="Data",icon = icon("database"),
         sidebarPanel(
         
         downloadButton("downloadData", "Download",icon = shiny::icon("download"))
@@ -89,7 +98,7 @@ shinyUI(navbarPage(
 navbarMenu(
   
   # Add a title.
-  title="Modeling Page",
+  title="Modeling Page",icon = icon("hornbill"),
   
   tabPanel(
     title = "Modeling Info",
