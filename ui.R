@@ -38,10 +38,10 @@ shinyUI(navbarPage(
           width = '360px'
         ),
         h3("App Description"),
-        "This app is about heart Disease data from Cleveland",
+        "This app is about heart Disease data from Cleveland.",
         "It demonstrates an exploratory data analysis of the popular
          Heart Disease  database.Heart disease prediction is carried out
-         using 3 different models such as linear regression,classification Trees
+         using 3 different models such as logistic regression,classification Trees
          and Random Forest",
         h3("Data Description"),
         "The data collected from",
@@ -52,8 +52,8 @@ shinyUI(navbarPage(
         h3("Tab Explanation"),
         tags$ul(
           tags$li(
-            "Data Tab:  Scroll through the data set",
-            " Subset this data set (by rows and columns)",
+            "Data Tab:  Scroll through the data set.",
+            " User can Subset this data set (by rows and columns) and ",
             " Download the data "
           ),
           tags$li(
@@ -63,7 +63,7 @@ shinyUI(navbarPage(
             
           ),
           tags$li(
-            "Modeling: Gives information, fitting and prediction on  three supervised learning models, "
+            "Modeling: It gives information, fitting and prediction on  three supervised learning models. "
             
           )
         )
@@ -75,6 +75,9 @@ shinyUI(navbarPage(
       sidebarPanel(
         selectInput("predictor", h5(strong("Choose Predictor")), c( "condition","cp","sex","exang")),
         selectInput("plotType",h5(strong("Type of Diagram")),c("Barchart","Histogram","Boxplot")),
+        conditionalPanel(condition = "input.plotType == 'Histogram' ",
+                         checkboxInput("density",h6("Add a desity curve to the plot"),value = FALSE)
+                         ),
         selectInput("summary",h5(strong("Type of Summary Report")),c("Frequency","Proportions"))
       ),
       mainPanel(
@@ -275,20 +278,26 @@ navbarMenu(
     # Create the main panel to hold model performances and 
     # summaries.
     mainPanel(
-      # Show the test-set accuracy.
+      # Show the Train-set accuracy.
       h3("Train Set Accuracies upto 3 decimal places"),
       dataTableOutput("accTableOutput"),
       br(),
-      # Show the coefficients of the Logistic Regression Model.
-      h3("Summary of Logistic Regression Model"),
+      h3("Test Set Accuracies upto 3 decimal places"),
+      dataTableOutput("accTableOutputTest"),
+      br(),
+      # Show the coefficients of the Logistic Regression Model .
+      h3("Summary of Logistic Regression Model for Train set"),
       dataTableOutput("logRegSummary"),
       br(),
+      
       # Show the final tree diagram.
-      h3("Classification Tree Diagram"),
+      h3("Classification Tree Diagram "),
       plotOutput("treeSummary"),
       br(),
-      h3("Random Forest Feature Importances"),
+      
+      h3("Random Forest Feature Importances for Train set"),
       plotOutput("rfVarImpPlot"),
+      
     )
   ),
   

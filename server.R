@@ -19,43 +19,38 @@ library(rattle)
 source("source.R")
 
 shinyServer(function(input, output, session) {
-  
+ 
+    getData<-reactive({
+      ###
+      # Create a data table output that the user can filter.
+      ###
+      selectedSex <- input$rb
+      selectedcondition <- input$rb2
+      selectedCols <- input$checkboxGroup
+      
+      heartDiseaseData%>%
+        filter(sex %in% selectedSex,
+               condition %in% selectedcondition)%>%
+        select(selectedCols)
+    })   
+    
     output$HDdata <- renderDataTable({
     
-    ###
-    # Create a data table output that the user can filter.
-    ###
-    
-    # Extract the selected sex, condition columns.
-    selectedSex <- input$rb
-    selectedcondition <- input$rb2
-    selectedCols <- input$checkboxGroup
-    
-    # Filter the data based on user input.
-    heartDiseaseData%>%
-       filter(sex %in% selectedSex,
-             condition %in% selectedcondition)%>%
-      select(selectedCols)
+     # Filter the data set based on user input.
+      newData<-getData()
     
   })
     
+    #download filtered data subset
     output$downloadData <- downloadHandler(
       
       filename = function() {
         paste("Heartdata.csv")
       },
       content = function(file) {
-        selectedSex <- input$rb
-        selectedcondition <- input$rb2
-        selectedCols <- input$checkboxGroup
-        write.csv(
-          heartDiseaseData %>%
-            filter(sex %in% selectedSex,
-                   condition %in% selectedcondition)%>%
-            select(input$selectedCols), 
-          file, 
-          row.names = FALSE
-        )
+        
+        write.csv(getData(),file)
+         
       }
     )
 
@@ -69,11 +64,15 @@ shinyServer(function(input, output, session) {
        ggtitle("Bar Chart based on predictors")
        }
     else if ( input$plotType == "Histogram"){
-      ggplot(heartDiseaseData,aes(age, fill=pull(heartDiseaseData,xvalue))) + 
+       g<- ggplot(heartDiseaseData,aes(age, fill=pull(heartDiseaseData,xvalue))) +
         geom_histogram(aes(y=..density..),breaks=seq(0, 80, by=1), color="grey18") +
-        geom_density(alpha=.2, fill="black")+   labs(x="Age") + 
-        ylab("Density / Count") + theme(legend.title = element_blank())+
+        ylab("Density / Count") + theme(legend.title = element_blank())+ labs(x="Age")+
         ggtitle("Heart disease  spread out across age based on predictors")
+        if (input$density){
+          g<-g+geom_density(alpha=.2, fill="black")  
+        } 
+      return(g)
+        
     }
   
   else if(input$plotType == "Boxplot"){
@@ -81,6 +80,8 @@ shinyServer(function(input, output, session) {
       geom_boxplot() + theme(legend.title = element_blank())+labs(x="")
    }
   })#end of plot
+  
+  #Data Exploration back-end
   
   output$dTable<-renderDataTable({
     xvalue<-input$predictor
@@ -107,7 +108,9 @@ shinyServer(function(input, output, session) {
     summary(heartDiseaseData)
   )
   
-  #math expression for model info tab
+  # Model page back-end
+  ## math expression for model info tab
+  
   output$logReg <- renderUI({
     
     withMathJax(
@@ -189,7 +192,7 @@ shinyServer(function(input, output, session) {
     
     # Set the random seed.
     set.seed(randSeed)
-    # Get the testing indexes.
+    # Get the traning indexes.
     trainInd <- sample(
       seq_len(nrow(datamodel)), 
       size=floor(nrow(datamodel)*propTraining)
@@ -251,19 +254,28 @@ shinyServer(function(input, output, session) {
     # Increment the progress bar, and update the detail text.
     progress$inc(0.8, detail = "Evaluating train Set Performance")
 
-    # Get test set predictions.
+    # Get train set predictions.
     logRegPreds <- predict(logRegModel, train, type="raw")
     treePreds <- predict(treeModel, train, type="raw")
     randForPreds <- predict(rfModel, train, type="raw")
 
+    # Get test set predictions.
+    logRegPredstest <- predict(logRegModel, test, type="raw")
+    treePredstest <- predict(treeModel, test, type="raw")
+    randForPredstest <- predict(rfModel, test, type="raw")
+    
     # Create the findMode function.
     findMode <- function(x) {
       uniqueX <- unique(x)
       uniqueX[which.max(tabulate(match(x, uniqueX)))]
     }
     # 
-    # Find the no-info rate.
+    # Find the no-info rate for train.
      noInfoRate <- mean(findMode(train$condition) == train$condition)
+     
+     # Find the no-info rate test.
+     noInfoRatetest <- mean(findMode(test$condition) == test$condition)
+     
     # Find the train set performances.
     accVec <- c(
       noInfoRate,
@@ -271,11 +283,28 @@ shinyServer(function(input, output, session) {
       mean(treePreds == train$condition, na.rm=TRUE),
       mean(randForPreds == train$condition, na.rm=TRUE)
     )
+    
+    # Find the test set performances.
+    accVectest <- c(
+      noInfoRatetest,
+      mean(logRegPredstest == test$condition, na.rm=TRUE),
+      mean(treePredstest == test$condition, na.rm=TRUE),
+      mean(randForPredstest == test$condition, na.rm=TRUE)
+    )
 
     # Convert to a matrix and percentages.
     accMatrix <- t(as.matrix(accVec)) * 100
+    accMatrixtest <- t(as.matrix(accVectest)) * 100
+    
     # Add informative column names.
     colnames(accMatrix) <- c(
+      "No Information Rate",
+      "Logistic Regression",
+      paste0("Tree (Cp = ", treeModel$bestTune$cp, ")"),
+      paste0("Random Forest (mtry = ", rfModel$bestTune$mtry, ")")
+    )
+    # Add informative column names.
+    colnames(accMatrixtest) <- c(
       "No Information Rate",
       "Logistic Regression",
       paste0("Tree (Cp = ", treeModel$bestTune$cp, ")"),
@@ -289,21 +318,34 @@ shinyServer(function(input, output, session) {
       mutate_all(
         paste0, sep="%"
       )
+    # Convert the matrix to a dataframe.
+    accTabletest <- as.data.frame(accMatrixtest) %>%
+      mutate_all(
+        round, digits = 3
+      ) %>%
+      mutate_all(
+        paste0, sep="%"
+      )
 
    # Create the output for the accuracy table.
    output$accTableOutput <- renderDataTable({
      datatable(accTable)
+   })
+   output$accTableOutputTest <- renderDataTable({
+     datatable(accTabletest)
    })
   
   # Create an output for the logistic regression model rounding to 3 decimals.
   output$logRegSummary <- renderDataTable({
     round(as.data.frame(summary(logRegModel)$coef), 3)
   })
+  
  
   # Create a nice tree diagram.
   output$treeSummary <- renderPlot({
     fancyRpartPlot(treeModel$finalModel)
   })
+  
 
  # Create an output for the feature importance plot for random forest model.
   output$rfVarImpPlot <- renderPlot({
@@ -311,6 +353,7 @@ shinyServer(function(input, output, session) {
       geom_col(fill="purple") +
       ggtitle("Most Important Features by Decrease in Gini Impurity")
   })
+  
 
   # Save the fitted models in a folder.
   saveRDS(logRegModel, "./Fitted Models/logRegModel.rds")
