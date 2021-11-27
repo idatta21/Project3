@@ -4,16 +4,26 @@ It is a well known fact that Heart Diseases are currently the leading cause of d
 
 ### The following packages are used for this app:
 
--[`shiny`]: app framework
--[`shinyWidgets`]: additional functionality for Shiny
--[`shinythemes`]: prettying up the app
--[`DT`]: additional functionality for Shiny
--[`readr`]: reading in data
--[`tidyverse`]: data manipulation and visualization
--[`plotly`]: additional visualization functionality
--[`imager`]: working with images
--[`caret`]: machine learning
--[`rattle`]: visualizing the tree model
+[`shiny`]: app framework
+
+[`shinyWidgets`]: additional functionality for Shiny
+
+[`shinythemes`]: prettying up the app
+
+[`DT`]: additional functionality for Shiny
+
+[`readr`]: reading in data
+
+[`tidyverse`]: data manipulation and visualization
+
+[`plotly`]: additional visualization functionality
+
+[`imager`]: working with images
+
+[`caret`]: machine learning
+
+[`rattle`]: visualizing the tree model
+
 
 ### To install them all, run this code chunk:
 
