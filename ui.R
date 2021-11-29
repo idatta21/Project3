@@ -298,6 +298,9 @@ navbarMenu(
       h3("Random Forest Feature Importances for Train set"),
       plotOutput("rfVarImpPlot"),
       
+      textOutput("randinfo"),
+      verbatimTextOutput("randmodelresults")
+      
     )
   ),
   

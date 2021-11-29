@@ -129,7 +129,7 @@ shinyServer(function(input, output, session) {
     
     numericInput(
       inputId = "minCp",
-      label = "Min.", 
+      label = "Min.(select: 0.01 or 0.002 etc )", 
       min = 0, 
       max = 1000, 
       value = 0.01
@@ -156,7 +156,7 @@ shinyServer(function(input, output, session) {
       inputId = "maxCp",
       label = "Max.", 
       min = minCp, 
-      max = 1000, 
+      max = 20, 
       value = value)
   })
   
@@ -234,7 +234,7 @@ shinyServer(function(input, output, session) {
       data=train[,c(c("condition"),Vars)],
       method="rpart", 
       metric="Accuracy",
-      tuneGrid=data.frame(cp = Cps),
+      tuneGrid=expand.grid(cp = Cps),
       trControl=TrControl
     )
     
@@ -263,6 +263,15 @@ shinyServer(function(input, output, session) {
     logRegPredstest <- predict(logRegModel, test, type="raw")
     treePredstest <- predict(treeModel, test, type="raw")
     randForPredstest <- predict(rfModel, test, type="raw")
+    
+    
+    output$randinfo<-renderText(
+      text<-paste0("Confusion matrix results of test set for RandomForest model ")
+    )
+    output$randmodelresults<-renderPrint(
+      confusionMatrix(data = test$condition, 
+                      reference=randForPredstest)
+    )
     
     # Create the findMode function.
     findMode <- function(x) {
