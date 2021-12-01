@@ -243,6 +243,7 @@ navbarMenu(
         uiOutput("minCpInput"),  
         style="display:inline-block"
       ),
+      br(),
       div(
         uiOutput("maxCpInput"),  
         style="display:inline-block"

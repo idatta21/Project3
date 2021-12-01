@@ -127,13 +127,14 @@ shinyServer(function(input, output, session) {
     # Create the input box for the min Cp for the tree.
     ###
     
-    numericInput(
-      inputId = "minCp",
-      label = "Min.(select: 0.01 or 0.002 etc )", 
-      min = 0, 
-      max = 1000, 
-      value = 0.01
-    )
+    # numericInput(
+    #   inputId = "minCp",
+    #   label = "Min.(select: 0.01 or 0.002 etc )", 
+    #   min = 0, 
+    #   max = 1000, 
+    #   value = 0.01
+    # )
+    radioButtons("minCp","Min.",c(".01",".001"))
   })
   output$maxCpInput <- renderUI({
     
