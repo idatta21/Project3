@@ -113,80 +113,69 @@ navbarMenu(
   tabPanel(
     title = "Modeling Info",
     mainPanel(fluidPage(
-      # Give an overview of the modeling approaches
+      
       br(),
       # Give an overview of logistic regression.
-      h4("Logistic Regression"),
+      h4(strong("Logistic Regression")),
       "Logistic regression is the appropriate regression analysis to conduct",
       "when the dependent variable is dichotomous (binary). ...",
       "It is used to describe data and to explain the ",
       "relationship between one dependent binary variable and one or more nominal,",
       "ordinal, interval or ratio-level independent variables.",
       uiOutput("logReg"),
-      h5("Benefits"),
+      h5(strong("Benefits")),
       "Logistic regression is easier to implement, interpret, and very efficient to train.",
       "It makes no assumptions about distributions of classes in feature space.",
       "It can easily extend to multiple classes(multinomial regression) and a natural ",
       "probabilistic view of class predictions.Good accuracy for many simple data sets",
       "and it performs well when the dataset is linearly separable.",
       
-      h5("Drawbacks"),
+      h5(strong("Drawbacks")),
       "The major limitation of Logistic Regression is the assumption of linearity between",
       "the dependent variable and the independent variables.It can only be used to predict",
       "discrete functions. Hence, the dependent variable of Logistic Regression is bound to",
       "the discrete number set.Logistic Regression requires average or no multicollinearity",
       "between independent variables.",
       
-      h4("Classification Trees"),
+      h4(strong("Classification Trees")),
       "A classification tree, or simply tree, is an algorithm ",
       "which recursively splits a feature space to create  ",
       "regions where observations are classified by the ",
-      "most dominant class in the region. Probabilities are the ",
-      "relative frequency of each class in a terminal node.",
+      "most dominant class in the region.",
       br(),
-      "Each split is made to reduce the training error as much  ",
-      "possible for that split; not for future splits. This  ",
-      "makes classification trees greedy algorithms. The best ",
-      " split at time ", strong("t"), 
-      " may not be the best split for the final ",
-      "fit. Trees are also prone to overfitting (high variance).",
+      "Trees are also prone to overfitting (high variance).",
       "They do have the benefit of being highly interpretable. ",
       br(),
-      h5("Benefits"),
+      h5(strong("Benefits")),
       "The Classification  methodology is one of the ",
       "oldest and most fundamental algorithms. It is used to predict outcomes",
       "based on certain predictor variables. They are excellent for data mining ",
       "tasks because they require very little data pre-processing.",
       br(),
-      h5("Drawbacks"),
+      h5(strong("Drawbacks")),
       "The disadvantage of classification tree often involves higher time to train ",
       "the model. Decision tree training is relatively expensive as the complexity ",
       "and time has taken are more. The Decision Tree algorithm is inadequate for ",
       "applying regression and predicting continuous values.",
       
       
-      h4("Random Forests"),
-      "Random forests create bootstrap samples of the training ",
-      "data and grow classification or regression trees on each ",
-      "sample. At each split, the trees are restricted to a ",
-      "subset of the features. For classification, the trees ",
-      "take a majority vote on the class of the new data. For ",
-      "regression, their predictions are averaged.",
+      h4(strong("Random Forests")),
+      "A random forest model is a supervised learning algorithm which extend the",
+      "idea of bagging method  to solve regression or classification problems.",
+      "It creates multiple trees from bootstrap samples like as bagging method ",
+      "and then use a random subset of predictors for each bootstrap sample/tree fit.", 
       br(),
-      "Only considering a subset of features at each split ",
-      "prevents a handful of features from dominating the early ",
-      "splits in each tree and makes each tree more independent ",
-      "(hopefully). By aggregating the predictions of the ",
+      " By aggregating the predictions of the ",
       "independent trees, we reduce the variance of the ",
       "predictions. Random forests are typically good out-of-the",
       "-box predictive models, but unfortunately lose the ",
       "interpretability that stand-alone trees have.",
       br(),
-      h5("Benefits"),
+      h5(strong("Benefits")),
       "It is robust to outliers. It works well with non-linear data. Lower risk",
       "of overfitting. It runs efficiently on a large dataset.",
       br(),
-      h5("Drawbacks"),
+      h5(strong("Drawbacks")),
       "Random forests are found to be biased while dealing with categorical ",
       "variables.It slow training method. It is not suitable for linear methods",
       "with a lot of sparse features."
@@ -196,19 +185,19 @@ navbarMenu(
   tabPanel(
     # Add a title for the sub tab.
     title = "Model Fitting",
-    # Allow the user to set a random seed between -1000 and 1000.
+    # Allow the user to set a random seed between -500 and 500.
     sidebarPanel(
       h3("Train-Test Split"),
       numericInput(
         inputId = "randSeed",
         label = "Set Random Seed",
         value = 1,
-        min = -1000,
-        max = 1000,
+        min = -500,
+        max = 500,
         step = 1
       ),
       # Allow the user to select the proportion of data to use for
-      # a traing set.
+      # a training set.
       numericInput(
         inputId = "propTraining",
         label = "Proportion of Data to use for Train Set",
@@ -220,8 +209,7 @@ navbarMenu(
       
       # Create a section for the cross-validation parameters.
       h3("Cross-Validation"),
-      # Set the number of folds.
-      div(
+        div(
         numericInput(
           inputId = "numFolds",
           label = "Number of Folds",
@@ -229,15 +217,14 @@ navbarMenu(
           min = 3,
           max = 5,
           step = 1
-        )#,
-        #style="display:inline-block"
+        )
       ),
       
       # Let the user set which variables to use.
       checkboxGroupInput("checkGroup", label = h4("Let the user set which variables to use for models: "), 
                          choices = colnames(select(datamodel, -condition)) , inline = F,
                          selected = colnames(select(datamodel, -condition))),
-      # Add side-by-side inputs to take in the tree parameters.
+      # Add inputs to take in the tree parameters.
       h4(tags$b("Complexity Parameter:")),
       div(
         uiOutput("minCpInput"),  
@@ -309,7 +296,6 @@ navbarMenu(
   tabPanel(
     # Add a title.
     title = "Prediction",
-    # Create a sidebar for the user to play with inputs.
     sidebarPanel(
       # Add buttons to select which model to use.
       radioButtons(

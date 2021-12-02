@@ -123,32 +123,14 @@ shinyServer(function(input, output, session) {
  # model info tab
   output$minCpInput <- renderUI({
     
-    ###
-    # Create the input box for the min Cp for the tree.
-    ###
-    
-    # numericInput(
-    #   inputId = "minCp",
-    #   label = "Min.(select: 0.01 or 0.002 etc )", 
-    #   min = 0, 
-    #   max = 1000, 
-    #   value = 0.01
-    # )
     radioButtons("minCp","Min.",c(".01",".001"))
   })
+  
   output$maxCpInput <- renderUI({
-    
-    ###
-    # Create the input box for the max number of Cp in the tree.
-    ###
     
     # Find the user's min Cp.
     minCp <- input$minCp
-    
-    # Start at 21.
     value <- 10
-    
-    # If the minCp is greater than 21, move it up.
     if (minCp > value){
       value <- minCp
     }
@@ -375,11 +357,6 @@ shinyServer(function(input, output, session) {
   
   output$logRegPredInputs <- renderUI({
     
-    ###
-    # Create a UI that lets the user input values for the logistic regression 
-    # and get a prediction.
-    ###
-    
     # Get the variables to use for each model.
     Vars <- input$checkGroup
     
@@ -398,11 +375,6 @@ shinyServer(function(input, output, session) {
   })
   
   output$treePredInputs <- renderUI({
-    
-    ###
-    # Create a UI that lets the user input values for the tree model and get a 
-    # prediction.
-    ###
     
     # Get the variables to use for each model.
     Vars <- input$checkGroup
@@ -423,11 +395,6 @@ shinyServer(function(input, output, session) {
   
   output$randForPredInputs <- renderUI({
     
-    ###
-    # Create a UI that lets the user input values for the random forest model  
-    # and get a prediction.
-    ###
-    
     # Get the variables to use for each model.
     Vars <- input$checkGroup
     
@@ -446,10 +413,6 @@ shinyServer(function(input, output, session) {
   })
   
   observeEvent(input$predStart, {
-    
-    ###
-    # Return predictions when the user wants them.
-    ###
     
     # Retrieve the model to use for prediction.
     modelType <- input$modelType
@@ -478,7 +441,7 @@ shinyServer(function(input, output, session) {
       
     }
     
-    # Loop through the user inputs adding them to a vector because you cannot
+    # Loop through the user inputs adding them to a vector because we cannot
     # access the variables by simply passing the vector of list elements to 
     # input.
     inputCopy <- c()
@@ -497,8 +460,8 @@ shinyServer(function(input, output, session) {
 
     # Get class and probability predictions for the user inputs.
     probPred <- predict(myModel, userInputs, type="prob")
-    # Combine them into a single matrix and round probabilities to 5 decimals.
-    preds <-  round(probPred, 5)
+    # Combine them into a single matrix and round probabilities to 4 decimals.
+    preds <-  round(probPred, 4)
    
     # Add informative column names.
     colnames(preds) <- c(
